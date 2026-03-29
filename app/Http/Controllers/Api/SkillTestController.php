@@ -3,47 +3,37 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
 
 class SkillTestController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
+    public function skillTest1()
     {
-        //
-    }
+        // - Define input = "aaabbcccddeddbzaa"
+        // - Define Map data
+        // - Loop input
+        //     - Set Map data
+        // - End loop input
+        // - Sorting map data asc
+        // - return Map data as string
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $input = "aaabbcccddeddbzaa";
+        $mappedData = collect();
+        $len = strlen($input);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
+        for ($i = 0; $i < $len; $i++) {
+            $char = $input[$i];
+            if ($mappedData->has($char)) {
+                $mappedData->put($char, $mappedData->get($char) + 1);
+            } else {
+                $mappedData->put($char, 1);
+            }
+        }
+        return $mappedData->sortKeys()->map(function ($val, $key) {
+            if ($val > 1) {
+                return $key . $val;
+            }
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+            return $key;
+        })->join("");
     }
 }
