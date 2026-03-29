@@ -3,6 +3,9 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use Carbon\Carbon;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class SkillTestController extends Controller
 {
@@ -66,5 +69,67 @@ class SkillTestController extends Controller
             }
         }
         return $input;
+    }
+    public function totalPrice(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'itemType' => 'required|string|in:A,B',
+            'totalItem' => 'required|integer|min:1',
+        ]);
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Error validation data!',
+                'errors'  => $validator->errors()
+            ], 422);
+        }
+        // Harga untuk tipe barang A adalah Rp. 99.900,-.
+        // Jika membeli dalam jumlah lebih dari 50 maka akan mendapatkan diskon 5%
+        // jika membeli di hari Senin atau Kamis maka akan mendapatkan diskon tambahan sebesar 10%.
+        // Harga untuk tipe barang B adalah Rp. 49.900,-.
+        // Jika membeli barang dalam jumlah lebih dari 100 maka akan mendapatkan diskon 10%
+        // jika membeli di hari Jumat maka akan mendapat diskon tambahan 5%.
+
+        /*
+            define totalPrice = 0
+            define totalDiscount = 0
+            IF item A
+                totalPrice = 99900 * totalItem
+                IF totalItem > 50
+                    totalDiscount += totalPrice * 0.05
+                IF date == "Senin" || "Kamis"
+                    totalDiscount += totalPrice * 0.1
+            ELSE
+                totalPrice = 49900 * totalItem
+                IF totalItem > 100
+                    totalDiscount += totalPrice * 0.1
+                IF date == "Jumat"
+                    totalDiscount += totalPrice * 0.05
+        */
+
+        $itemType = $request->itemType;
+        $totalItem = $request->totalItem;
+        $date = now()->setTimezone('+07:00');
+
+        $totalPrice = 0;
+        $totalDiscount = 0;
+        if ($itemType == "A") {
+            $totalPrice =  99900 * $totalItem;
+            if ($totalItem > 50) {
+                $totalDiscount += $totalPrice * 0.05;
+            }
+            if ($date->isMonday() || $date->isThursday()) {
+                $totalDiscount += $totalPrice * 0.1;
+            }
+        } else {
+            $totalPrice =  49900 * $totalItem;
+            if ($totalItem > 100) {
+                $totalDiscount += $totalPrice * 0.1;
+            }
+            if ($date->isFriday()) {
+                $totalDiscount += $totalPrice * 0.05;
+            }
+        }
+        return $totalPrice - $totalDiscount;
     }
 }
